@@ -7,25 +7,21 @@ from asteroids_neuroevolucao import *
 # CONFIGURAÇÕES DA EVOLUÇÃO
 # ---------------------------------------------------------
 
-TAMANHO_POPULACAO = 30
+TAMANHO_POPULACAO = 40
 NUM_GERACOES = 50
-NUM_EPISODIOS = 3
+NUM_EPISODIOS = 6
 MAX_PASSOS = 3000
 TAXA_MUTACAO = 0.1
-INTENSIDADE_MUTACAO =
+INTENSIDADE_MUTACAO = 0.05
 NUM_ELITE = 2
 TAMANHO_TORNEIO = 3
 
 
 def avaliar(agente):
-    # TODO (Passo 1)
-    # criar o ambiente
-    # repetir NUM_EPISODIOS vezes:
-    #     reiniciar o jogo e a memória do agente
-    #     jogar até acabar ou chegar em MAX_PASSOS, somando a recompensa
-    # fechar o ambiente
-    # devolver a média dos pontos
-    pass
+    env = criar_ambiente()
+    estado, info = env.reset()
+    print(estado)
+    env.close()
 
 
 def criar_populacao():
@@ -59,9 +55,6 @@ def nova_geracao(populacao):
 
 
 if __name__ == "__main__":
-    # Área de testes: teste cada função aqui conforme for escrevendo.
-    # Exemplo para o Passo 1:
-    #
-    # agente = Agente()
-    # print(avaliar(agente))
+    agente = Agente()
+    avaliar(agente)
     pass
