@@ -15,7 +15,7 @@ NUM_RAM = 128
 NUM_ACOES = 14
 
 NUM_ENTRADAS = NUM_RAM + NUM_ACOES
-NUM_OCULTOS = 64
+NUM_OCULTOS = 32
 
 
 def criar_ambiente(render_mode=None):
