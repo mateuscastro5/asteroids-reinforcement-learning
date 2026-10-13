@@ -21,6 +21,15 @@ def avaliar(agente):
     env = criar_ambiente()
     estado, info = env.reset()
     print(estado)
+
+    truncado = False
+    terminado = False
+    
+    while not terminado or truncado:
+        acao = agente.agir(estado)
+        estado, recompensa, terminado, truncado, info = env.step(acao)
+        print("ação:", acao, "recompensa:", recompensa, "terminado:", terminado, "truncado:", truncado)
+        
     env.close()
 
 
