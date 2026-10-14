@@ -66,12 +66,20 @@ def select(population):
 
 
 def new_generation(population):
-    # TODO (Step 5)
-    # sort the population by fitness (best first)
-    # copy the NUM_ELITE best ones unchanged
-    # fill the rest with children: parent = select, child = copy of parent, mutate child
-    # return the new list with POPULATION_SIZE agents
-    pass
+    population.sort(key=lambda agent: agent.fitness, reverse=True)
+
+    new_population = []
+
+    for i in range(NUM_ELITE):
+        new_population.append(copy.deepcopy(population[i]))
+
+    while len(new_population) < POPULATION_SIZE:
+        parent = select(population)
+        child = copy.deepcopy(parent)
+        mutate(child)
+        new_population.append(child)
+
+    return new_population
 
 
 if __name__ == "__main__":
