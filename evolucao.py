@@ -1,5 +1,6 @@
 import copy
 import random
+import time
 from multiprocessing import Pool
 
 from asteroids_neuroevolucao import *
@@ -16,6 +17,8 @@ MUTATION_RATE = 0.1
 MUTATION_STRENGTH = 0.05
 NUM_ELITE = 2
 TOURNAMENT_SIZE = 3
+
+SEED = 42
 
 
 def evaluate(agent):
@@ -89,10 +92,43 @@ def evaluate_population(population, pool):
         agent.fitness = score
 
 
+def train():
+    random.seed(SEED)
+    np.random.seed(SEED)
+
+    population = create_population()
+    history = []
+    start = time.time()
+
+    with Pool() as pool:
+        for generation in range(NUM_GENERATIONS):
+            evaluate_population(population, pool)
+
+            scores = [agent.fitness for agent in population]
+            best = max(scores)
+            mean = float(np.mean(scores))
+            worst = min(scores)
+
+            history.append({
+                "generation": generation,
+                "best": best,
+                "mean": mean,
+                "worst": worst,
+            })
+
+            print(
+                f"Generation {generation:03d} | "
+                f"Best: {best:7.1f} | "
+                f"Mean: {mean:7.1f} | "
+                f"Worst: {worst:7.1f} | "
+                f"{time.time() - start:5.0f}s"
+            )
+
+            if generation < NUM_GENERATIONS - 1:
+                population = new_generation(population)
+
+    return population, history
+
+
 if __name__ == "__main__":
-    a = Agent()
-    before_W1 = a.W1.copy()
-    before_b1 = a.b1.copy()
-    mutate(a)
-    print((a.W1 != before_W1).sum(), "of", a.W1.size, "W1 weights changed")
-    print((a.b1 != before_b1).sum(), "of", a.b1.size, "b1 weights changed")
+    train()
