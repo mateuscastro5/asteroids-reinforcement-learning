@@ -17,6 +17,11 @@ NUM_ACTIONS = 14
 NUM_INPUTS = NUM_RAM + NUM_ACTIONS
 NUM_HIDDEN = 32
 
+RIGHT = 3
+LEFT = 4
+RIGHTFIRE = 9
+LEFTFIRE = 10
+
 
 def create_env(render_mode=None):
     # frameskip=4 and sticky actions
@@ -65,4 +70,21 @@ def load_agent(path):
     agent.b1 = weights["b1"]
     agent.W2 = weights["W2"]
     agent.b2 = weights["b2"]
+    return agent
+
+
+def create_spin_fire_agent(margin):
+    agent = Agent()
+
+    agent.W1[:, 0] = 0.0
+    agent.W1[NUM_RAM + RIGHTFIRE, 0] = 2.0
+    agent.b1[0] = 0.0
+
+    agent.W2[:, :] = 0.0
+    agent.W2[0, RIGHT] = 2.0 * margin
+    agent.W2[0, RIGHTFIRE] = -2.0 * margin
+
+    agent.b2[:] = 0.0
+    agent.b2[RIGHTFIRE] = margin
+
     return agent

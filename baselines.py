@@ -6,17 +6,12 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from asteroids_neuroevolucao import NUM_ACTIONS, load_agent
+from asteroids_neuroevolucao import LEFT, LEFTFIRE, NUM_ACTIONS, RIGHT, RIGHTFIRE, load_agent
 from evolucao import BEST_AGENT_PATH, RESULTS_DIR, evaluate
 
 TEST_EPISODES = 100
 TEST_SEED = 2_000_000
 BASELINES_PATH = os.path.join(RESULTS_DIR, "baselines.csv")
-
-RIGHT = 3
-LEFT = 4
-RIGHTFIRE = 9
-LEFTFIRE = 10
 
 
 class RandomAgent:

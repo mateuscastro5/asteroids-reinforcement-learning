@@ -27,6 +27,8 @@ VALIDATION_EPISODES = 50
 VALIDATION_SEED = 1_000_000
 
 RESUME = True
+START_FROM_SPIN_FIRE = True
+SPIN_FIRE_MARGIN = 0.2
 
 SEED = 42
 RESULTS_DIR = "results"
@@ -175,7 +177,7 @@ def train():
     deadline = start + MAX_HOURS * 3600
 
     with Pool() as pool:
-        if RESUME and os.path.exists(BEST_AGENT_PATH):
+        if RESUME and os.path.exists(BEST_AGENT_PATH) and os.path.exists(HISTORY_PATH):
             start_agent = load_agent(BEST_AGENT_PATH)
             history = load_history()
             best_validated = float(validation_scores([start_agent], pool)[0])
@@ -184,6 +186,12 @@ def train():
                 f"{best_validated:.1f} points",
                 flush=True,
             )
+        elif START_FROM_SPIN_FIRE:
+            start_agent = create_spin_fire_agent(SPIN_FIRE_MARGIN)
+            history = []
+            best_validated = float(validation_scores([start_agent], pool)[0])
+            start_agent.save(BEST_AGENT_PATH)
+            print(f"Starting from spin + fire: {best_validated:.1f} points", flush=True)
         else:
             start_agent = None
             history = []
