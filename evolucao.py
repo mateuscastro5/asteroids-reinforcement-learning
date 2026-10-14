@@ -45,6 +45,13 @@ def avaliar(agente):
 
 def criar_populacao():
 
+    lista = []
+
+    for _ in range(TAMANHO_POPULACAO):
+        init_agente = Agente()
+        lista.append(init_agente)
+
+    return lista
     pass
 
 
@@ -74,6 +81,6 @@ def nova_geracao(populacao):
 
 if __name__ == "__main__":
     agente = Agente()
-    for i in range(5):
-        print("avaliação", i, ":", avaliar(agente))
+    pop = criar_populacao()
+    print(len(pop))
     pass
