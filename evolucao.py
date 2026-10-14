@@ -1,5 +1,6 @@
 import copy
 import random
+from multiprocessing import Pool
 
 from asteroids_neuroevolucao import *
 
@@ -80,6 +81,12 @@ def new_generation(population):
         new_population.append(child)
 
     return new_population
+
+
+def evaluate_population(population, pool):
+    scores = pool.map(evaluate, population)
+    for agent, score in zip(population, scores):
+        agent.fitness = score
 
 
 if __name__ == "__main__":
