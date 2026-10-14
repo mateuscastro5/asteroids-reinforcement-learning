@@ -13,7 +13,7 @@ from asteroids_neuroevolucao import *
 
 POPULATION_SIZE = 40
 NUM_GENERATIONS = 100000
-MAX_HOURS = 8
+MAX_HOURS = 2
 NUM_EPISODES = 6
 MAX_STEPS = 10000
 MUTATION_RATE = 0.1
@@ -23,7 +23,10 @@ TOURNAMENT_SIZE = 3
 
 VALIDATE_EVERY = 25
 NUM_FINALISTS = 5
-VALIDATION_EPISODES = 30
+VALIDATION_EPISODES = 50
+VALIDATION_SEED = 1_000_000
+
+RESUME = True
 
 SEED = 42
 RESULTS_DIR = "results"
@@ -31,13 +34,14 @@ HISTORY_PATH = os.path.join(RESULTS_DIR, "history.csv")
 BEST_AGENT_PATH = os.path.join(RESULTS_DIR, "best_agent.npz")
 
 
-def evaluate(agent, num_episodes=NUM_EPISODES):
+def evaluate(agent, num_episodes=NUM_EPISODES, seed=None):
     env = create_env()
     total_reward = 0.0
 
-    for _ in range(num_episodes):
+    for episode in range(num_episodes):
 
-        state, info = env.reset()
+        episode_seed = None if seed is None else seed + episode
+        state, info = env.reset(seed=episode_seed)
         agent.reset()
         truncated = False
         terminated = False
@@ -56,12 +60,19 @@ def evaluate(agent, num_episodes=NUM_EPISODES):
     return total_reward / num_episodes
 
 
-def create_population():
+def create_population(start_agent=None):
 
     population = []
 
-    for _ in range(POPULATION_SIZE):
-        new_agent = Agent()
+    if start_agent is not None:
+        population.append(copy.deepcopy(start_agent))
+
+    while len(population) < POPULATION_SIZE:
+        if start_agent is None:
+            new_agent = Agent()
+        else:
+            new_agent = copy.deepcopy(start_agent)
+            mutate(new_agent)
         population.append(new_agent)
 
     return population
@@ -96,8 +107,8 @@ def new_generation(population):
     return new_population
 
 
-def evaluate_population(population, pool):
-    scores = pool.map(evaluate, population)
+def evaluate_population(population, pool, seed):
+    scores = pool.starmap(evaluate, [(agent, NUM_EPISODES, seed) for agent in population])
     for agent, score in zip(population, scores):
         agent.fitness = score
 
@@ -109,12 +120,35 @@ def save_history(history):
         writer.writerows(history)
 
 
+def load_history():
+    with open(HISTORY_PATH) as file:
+        rows = list(csv.DictReader(file))
+
+    return [
+        {
+            "generation": int(row["generation"]),
+            "best": float(row["best"]),
+            "mean": float(row["mean"]),
+            "worst": float(row["worst"]),
+        }
+        for row in rows
+    ]
+
+
+def validation_scores(agents, pool):
+    games = [
+        (agent, 1, VALIDATION_SEED + episode)
+        for agent in agents
+        for episode in range(VALIDATION_EPISODES)
+    ]
+    results = np.array(pool.starmap(evaluate, games))
+    return results.reshape(len(agents), VALIDATION_EPISODES).mean(axis=1)
+
+
 def validate(population, pool, best_validated):
     finalists = sorted(population, key=lambda agent: agent.fitness, reverse=True)[:NUM_FINALISTS]
 
-    games = [(agent, 1) for agent in finalists for _ in range(VALIDATION_EPISODES)]
-    results = np.array(pool.starmap(evaluate, games))
-    averages = results.reshape(len(finalists), VALIDATION_EPISODES).mean(axis=1)
+    averages = validation_scores(finalists, pool)
 
     winner = int(np.argmax(averages))
     print(
@@ -137,15 +171,28 @@ def train():
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
-    population = create_population()
-    history = []
-    best_validated = float("-inf")
     start = time.time()
     deadline = start + MAX_HOURS * 3600
 
     with Pool() as pool:
-        for generation in range(NUM_GENERATIONS):
-            evaluate_population(population, pool)
+        if RESUME and os.path.exists(BEST_AGENT_PATH):
+            start_agent = load_agent(BEST_AGENT_PATH)
+            history = load_history()
+            best_validated = float(validation_scores([start_agent], pool)[0])
+            print(
+                f"Resuming from {BEST_AGENT_PATH} at generation {len(history)}: "
+                f"{best_validated:.1f} points",
+                flush=True,
+            )
+        else:
+            start_agent = None
+            history = []
+            best_validated = float("-inf")
+
+        population = create_population(start_agent)
+
+        for generation in range(len(history), NUM_GENERATIONS):
+            evaluate_population(population, pool, seed=generation * NUM_EPISODES)
 
             scores = [agent.fitness for agent in population]
             best = max(scores)
