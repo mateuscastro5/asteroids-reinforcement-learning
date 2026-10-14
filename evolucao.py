@@ -4,83 +4,82 @@ import random
 from asteroids_neuroevolucao import *
 
 # ---------------------------------------------------------
-# CONFIGURAÇÕES DA EVOLUÇÃO
+# EVOLUTION SETTINGS
 # ---------------------------------------------------------
 
-TAMANHO_POPULACAO = 40
-NUM_GERACOES = 50
-NUM_EPISODIOS = 6
-MAX_PASSOS = 3000
-TAXA_MUTACAO = 0.1
-INTENSIDADE_MUTACAO = 0.05
+POPULATION_SIZE = 40
+NUM_GENERATIONS = 50
+NUM_EPISODES = 6
+MAX_STEPS = 3000
+MUTATION_RATE = 0.1
+MUTATION_STRENGTH = 0.05
 NUM_ELITE = 2
-TAMANHO_TORNEIO = 3
+TOURNAMENT_SIZE = 3
 
 
-def avaliar(agente):
-    env = criar_ambiente()
-    total_recompensa = 0.0
+def evaluate(agent):
+    env = create_env()
+    total_reward = 0.0
 
-    for _ in range(NUM_EPISODIOS):
-        
-        estado, info = env.reset()
-        agente.reiniciar()
-        truncado = False
-        terminado = False
-        passos = 0
-        pontos = 0.0
+    for _ in range(NUM_EPISODES):
 
+        state, info = env.reset()
+        agent.reset()
+        truncated = False
+        terminated = False
+        steps = 0
+        score = 0.0
 
-        while not (terminado or truncado) and passos < MAX_PASSOS:
-            acao = agente.agir(estado)
-            estado, recompensa, terminado, truncado, info = env.step(acao)
-            pontos += recompensa
-            passos += 1
+        while not (terminated or truncated) and steps < MAX_STEPS:
+            action = agent.act(state)
+            state, reward, terminated, truncated, info = env.step(action)
+            score += reward
+            steps += 1
 
-        total_recompensa += pontos
+        total_reward += score
 
     env.close()
-    return total_recompensa / NUM_EPISODIOS
+    return total_reward / NUM_EPISODES
 
 
-def criar_populacao():
+def create_population():
 
-    lista = []
+    population = []
 
-    for _ in range(TAMANHO_POPULACAO):
-        init_agente = Agente()
-        lista.append(init_agente)
+    for _ in range(POPULATION_SIZE):
+        new_agent = Agent()
+        population.append(new_agent)
 
-    return lista
+    return population
+
+
+def mutate(agent):
+    for table in [agent.W1, agent.b1, agent.W2, agent.b2]:
+        mask = np.random.rand(*table.shape) < MUTATION_RATE
+        noise = np.random.randn(*table.shape) * MUTATION_STRENGTH
+        table += noise * mask
+
+
+def select(population):
+    # TODO (Step 4)
+    # draw TOURNAMENT_SIZE random agents
+    # return the one with the highest fitness
     pass
 
 
-def mutar(agente):
-    # TODO (Passo 3)
-    # para cada tabela (W1, b1, W2, b2):
-    #     sortear quais posições mudam (chance TAXA_MUTACAO)
-    #     somar ruído × INTENSIDADE_MUTACAO nessas posições
-    pass
-
-
-def selecionar(populacao):
-    # TODO (Passo 4)
-    # sortear TAMANHO_TORNEIO agentes
-    # devolver o de maior fitness
-    pass
-
-
-def nova_geracao(populacao):
-    # TODO (Passo 5)
-    # ordenar a população pela nota (maior primeiro)
-    # copiar os NUM_ELITE melhores sem alteração
-    # completar com filhos: pai = selecionar, filho = cópia do pai, mutar filho
-    # devolver a nova lista com TAMANHO_POPULACAO agentes
+def new_generation(population):
+    # TODO (Step 5)
+    # sort the population by fitness (best first)
+    # copy the NUM_ELITE best ones unchanged
+    # fill the rest with children: parent = select, child = copy of parent, mutate child
+    # return the new list with POPULATION_SIZE agents
     pass
 
 
 if __name__ == "__main__":
-    agente = Agente()
-    pop = criar_populacao()
-    print(len(pop))
-    pass
+    a = Agent()
+    before_W1 = a.W1.copy()
+    before_b1 = a.b1.copy()
+    mutate(a)
+    print((a.W1 != before_W1).sum(), "of", a.W1.size, "W1 weights changed")
+    print((a.b1 != before_b1).sum(), "of", a.b1.size, "b1 weights changed")
