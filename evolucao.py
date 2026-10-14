@@ -61,10 +61,8 @@ def mutate(agent):
 
 
 def select(population):
-    # TODO (Step 4)
-    # draw TOURNAMENT_SIZE random agents
-    # return the one with the highest fitness
-    pass
+    competitors = random.sample(population, TOURNAMENT_SIZE)
+    return max(competitors, key=lambda agent: agent.fitness)
 
 
 def new_generation(population):
