@@ -53,3 +53,16 @@ class Agent:
         action = int(np.argmax(output))
         self.prev_action = action
         return action
+
+    def save(self, path):
+        np.savez(path, W1=self.W1, b1=self.b1, W2=self.W2, b2=self.b2)
+
+
+def load_agent(path):
+    weights = np.load(path)
+    agent = Agent()
+    agent.W1 = weights["W1"]
+    agent.b1 = weights["b1"]
+    agent.W2 = weights["W2"]
+    agent.b2 = weights["b2"]
+    return agent
