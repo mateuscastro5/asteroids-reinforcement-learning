@@ -19,23 +19,32 @@ TAMANHO_TORNEIO = 3
 
 def avaliar(agente):
     env = criar_ambiente()
-    estado, info = env.reset()
-    print(estado)
+    total_recompensa = 0.0
 
-    truncado = False
-    terminado = False
-    
-    while not terminado or truncado:
-        acao = agente.agir(estado)
-        estado, recompensa, terminado, truncado, info = env.step(acao)
-        print("ação:", acao, "recompensa:", recompensa, "terminado:", terminado, "truncado:", truncado)
+    for _ in range(NUM_EPISODIOS):
         
+        estado, info = env.reset()
+        agente.reiniciar()
+        truncado = False
+        terminado = False
+        passos = 0
+        pontos = 0.0
+
+
+        while not (terminado or truncado) and passos < MAX_PASSOS:
+            acao = agente.agir(estado)
+            estado, recompensa, terminado, truncado, info = env.step(acao)
+            pontos += recompensa
+            passos += 1
+
+        total_recompensa += pontos
+
     env.close()
+    return total_recompensa / NUM_EPISODIOS
 
 
 def criar_populacao():
-    # TODO (Passo 2)
-    # devolver uma lista com TAMANHO_POPULACAO agentes novos
+
     pass
 
 
@@ -65,5 +74,6 @@ def nova_geracao(populacao):
 
 if __name__ == "__main__":
     agente = Agente()
-    avaliar(agente)
+    for i in range(5):
+        print("avaliação", i, ":", avaliar(agente))
     pass
