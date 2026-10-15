@@ -127,10 +127,23 @@ Para corrigir isso, **todos os agentes de uma geração jogam as mesmas partidas
 - **A validação também pode enganar.** O agente final fez 4267 nas 50 partidas de validação, mas 3954 no teste. Como o programa escolheu várias vezes o melhor naquelas mesmas 50 partidas, acabou favorecendo quem teve sorte nelas. Por isso o número oficial vem de partidas separadas.
 - **Asteroids exige muitas partidas para comparar agentes.** Com 100 partidas de teste, o agente final chegou a parecer empatado com o "girar e atirar". Só com 300 partidas a diferença ficou clara.
 
+## Limitações
+
+**O agente final é, essencialmente, um "girar e atirar" melhorado.** Em 99,6% dos passos ele alterna entre girar e girar atirando; o comportamento novo (hiperespaço) aparece em apenas 0,4% dos passos. Ele não mira nem desvia de forma deliberada.
+
+Isso tem algumas explicações:
+
+- **No Asteroids, atirar sem mirar não custa nada.** Não há penalidade por tiro errado, então disparar continuamente em todas as direções já é uma estratégia forte. O que mais aumenta a pontuação é sobreviver por mais tempo (desviar dos asteroides), não acertar mais tiros.
+- **Asteroids é difícil para métodos de aprendizado por reforço em geral.** O DQN, no artigo que popularizou o aprendizado por reforço profundo em jogos de Atari ([Mnih et al., 2015](https://www.nature.com/articles/nature14236)), fez ~1600 pontos nesse jogo, abaixo das estratégias fixas medidas aqui.
+- **A posição dos asteroides está na entrada, mas de forma "embaralhada".** A RAM contém as posições da nave e dos asteroides, misturadas entre 128 bytes sem significado explícito. Para usar essa informação, a rede precisaria descobrir sozinha quais bytes combinar e como, o que é muito difícil de encontrar apenas com mutações aleatórias em ~5000 pesos.
+
+A variação entre partidas também é grande: o mesmo agente pode fazer ~2000 em uma partida e ~8000 na seguinte. Por isso poucas partidas não bastam para julgar o agente, nem para melhor nem para pior.
+
 ## Próximos passos possíveis
 
+- **Entradas com significado (não implementado).** Em vez da RAM crua, calcular e passar para a rede informações prontas: posição e direção da nave, distância e direção do asteroide mais próximo em relação à nave, quantidade de asteroides por perto. Com isso, uma rede menor poderia aprender regras como "asteroide se aproximando → hiperespaço ou fugir" e "asteroide à frente → atirar", ou seja, um comportamento de mira e esquiva. O primeiro passo seria identificar quais bytes da RAM guardam essas posições (existe um mapeamento publicado no benchmark [AtariARI](https://github.com/mila-iqia/atari-representation-learning), que precisaria ser conferido na prática). Não há garantia de aumento grande de pontuação, mas a tendência é um comportamento visivelmente mais inteligente.
 - Validar comparando cada candidato com o campeão atual em partidas novas a cada vez, em vez das mesmas 50.
-- População maior e mutação que diminui ao longo do treino, para tentar sair do platô.
+- População maior e mutação que diminui ao longo do treino, para tentar sair do platô. Sozinho, isso tende a dar ganhos pequenos e não muda o comportamento do agente.
 
 ---
 
