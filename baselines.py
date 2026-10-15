@@ -9,8 +9,8 @@ import numpy as np
 from asteroids_neuroevolucao import LEFT, LEFTFIRE, NUM_ACTIONS, RIGHT, RIGHTFIRE, load_agent
 from evolucao import BEST_AGENT_PATH, RESULTS_DIR, evaluate
 
-TEST_EPISODES = 100
-TEST_SEED = 2_000_000
+TEST_EPISODES = 300
+TEST_SEED = 3_000_000
 BASELINES_PATH = os.path.join(RESULTS_DIR, "baselines.csv")
 
 
